@@ -1,5 +1,6 @@
 .nfs*
-
+# ignore pople_poses dataset
+datasets/people_poses
 # compilation and distribution
 __pycache__
 _ext
