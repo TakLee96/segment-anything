@@ -66,8 +66,14 @@ with open(os.path.join(root, f"val_id.txt"), 'r') as lf:
 num_valid_case, sum_miou, sum_pixAcc = 0,0,0
 for data_name in (pbar := tqdm(data_list)):
     image = cv2.imread(root +'val_images/' + data_name + '.jpg')
+    if image is None:
+        print("image is None", data_name)
+        continue
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     mask_gt = cv2.imread(root + 'val_segmentations/' + data_name + '.png')
+    if mask_gt is None:
+        print("mask_gt is None", data_name)
+        continue
     anns = gt_to_anns(mask_gt)
     predictor.set_image(image)
     img_miou_sum , img_pixacc_sum, num_class = 0, 0, len(anns)
