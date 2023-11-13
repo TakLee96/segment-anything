@@ -70,9 +70,13 @@ class PeoplePosesDataset(Dataset):
 
 
 def compute_pix_acc(predicted, target):
+    assert predicted.shape == target.shape
+    assert len(predicted.shape) == 2
     return (predicted == target).mean()
 
 def compute_IOU(predicted, target):
+    assert predicted.shape == target.shape
+    assert len(predicted.shape) == 2
     intersection = np.logical_and(target, predicted).sum()
     union = np.logical_or(target, predicted).sum()
     assert union > 0
@@ -92,13 +96,13 @@ def compute_metric(name, masks, label):
         if label_i.sum() == 0:
             # pandas dataframe automatically skips nan
             # when computing .count() and .mean()
-            pix_acc_metric[label_name] = np.nan
             iou_metric[label_name] = np.nan
+            pix_acc_metric[label_name] = np.nan
         else:
-            pix_acc_metric[label_name] = compute_pix_acc(mask_i, label_i)
             iou_metric[label_name] = compute_IOU(mask_i, label_i)
+            pix_acc_metric[label_name] = compute_pix_acc(mask_i, label_i)
     
-    return pix_acc_metric, iou_metric
+    return iou_metric, pix_acc_metric
 
 
 def set_embedding(predictor, embed, label):
@@ -157,11 +161,12 @@ def main():
             for ann in anns:
                 input_point = ann['random_point_1']
                 input_label = np.array([1])
-                masks[ann['label']], _, _ = predictor.predict(
+                mask, _, _ = predictor.predict(
                     point_coords=input_point,
                     point_labels=input_label,
                     multimask_output=False,
                 )
+                masks[ann['label']] = mask[0]
         miou, pix_acc = compute_metric(name, masks, label)
         miou_table.append(miou)
         pix_acc_table.append(pix_acc)
