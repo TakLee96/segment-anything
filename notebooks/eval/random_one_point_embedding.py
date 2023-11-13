@@ -107,10 +107,12 @@ def compute_metric(name, masks, label):
 
 def set_embedding(predictor, embed, label):
     predictor.is_image_set = True
-    predictor.features = embed
+    predictor.features = embed[None,]
+    # image_batch, mask_batch, height, width
+    assert len(predictor.features.shape) == 4
     predictor.original_size = label.shape
-    # TODO(jiahang): fix magic numbers
-    predictor.input_size = (1024, 1024)
+    # NOTE(jiahang): resized but not cropped
+    predictor.input_size = predictor.transform.get_preprocess_shape(label.shape[0], label.shape[1], 1024)
 
 
 def gt_to_anns(mask_gt):
