@@ -1,5 +1,3 @@
-# NOTE(jiahang): this file produces v5 model
-
 import numpy as np
 import torch
 import torch.nn as nn
@@ -19,15 +17,31 @@ from torch.utils.data import Dataset
 from torch.utils.data import DataLoader
 from torch.utils.data.dataloader import default_collate
 
-import os
+import pandas as pd
 from tqdm import tqdm
-from torch.optim.lr_scheduler import SequentialLR, ConstantLR, ExponentialLR
-from torch.utils.tensorboard import SummaryWriter
 
-
-# test smaller weight on background and longer epoches
-MODEL = 'v5'
+# CONSTANTS
 device = 'cuda:0'
+LABELS = """Background
+Hat
+Hair
+Glove
+Sunglasses
+UpperClothes
+Dress
+Coat
+Socks
+Pants
+Jumpsuits
+Scarf
+Skirt
+Face
+Left-arm
+Right-arm
+Left-leg
+Right-leg
+Left-shoe
+Right-shoe""".split('\n')
 
 
 class MaskDecoder(nn.Module):
@@ -81,7 +95,6 @@ class MaskDecoder(nn.Module):
 
         return masks
 
-
 class Decoder(nn.Module):
     def __init__(self):
         super().__init__()
@@ -121,65 +134,109 @@ class PeoplePosesDataset(Dataset):
         return len(self.data_list)
     
     def __getitem__(self, index):
-        """ embed: (1, 256, 64, 64)
-            label: (1, 256, 256)
+        """ embed: (256, 64, 64)
+            label: (H, W)
         """
         data = np.load(os.path.join(self.embed_dir, self.data_list[index] + ".npz"))
         embed = data['embed']
         embed = torch.as_tensor(embed)
-        label = data['label']
-        # NOTE(jiahang): uint8 cannot handle -1, other int fails F.interpolate
-        label = torch.as_tensor(label).to(torch.float32)
-        label = F.interpolate(label[None, None, ...], (256, 256), mode='nearest')
-        return embed, label[0][0].to(torch.int64)
+        
+        label = cv2.imread(os.path.join(self.mask_dir, self.data_list[index] + ".png"))
+
+        return self.data_list[index], embed, label[:,:,0]
 
 
-# TODO(jiahang): fix magic numbers
-LOSS_WEIGHT = np.ones(shape=(20,), dtype=np.float32)
-LOSS_WEIGHT[0] = 0.1
-LOSS_WEIGHT = torch.as_tensor(LOSS_WEIGHT).to(device)
-def loss_fn(logits, labels):
-    """ logits/labels: (B, C, 1024, 1024) """
-    return F.cross_entropy(logits, labels, weight=LOSS_WEIGHT, ignore_index=-1, reduction='mean')
+def compute_pix_acc(predicted, target):
+    assert predicted.shape == target.shape
+    assert len(predicted.shape) == 2
+    return (predicted == target).mean()
+
+def compute_IOU(predicted, target):
+    assert predicted.shape == target.shape
+    assert len(predicted.shape) == 2
+    intersection = np.logical_and(target, predicted).sum()
+    union = np.logical_or(target, predicted).sum()
+    assert union > 0
+    return intersection / union
+
+def compute_metric(name, mask, label):
+    """ recover mask at original resolution and compute mIoU
+        name: data id
+        mask: torch.Tensor(size=[20, 256, 256])
+        label: np.ndarray(shape=(H, W)) --> numbers from 0 to 19
+    """
+    h, w = label.shape
+    size = max(h, w)
+    mask = F.interpolate(
+        mask.unsqueeze(0),
+        (size, size),
+        mode="bilinear",
+        align_corners=False,
+    )
+    mask = torch.permute(mask, [0, 2, 3, 1]).cpu()[0, :h, :w]
+    mask = mask.numpy().argmax(axis=-1)
+    
+    pix_acc_metric = { "name": name }
+    iou_metric = { "name": name }
+    for i, label_name in enumerate(LABELS):
+        mask_i  = (mask == i)
+        label_i = (label == i)
+        if label_i.sum() == 0:
+            # pandas dataframe automatically skips nan
+            # when computing .count() and .mean()
+            iou_metric[label_name] = np.nan
+            pix_acc_metric[label_name] = np.nan
+        else:
+            iou_metric[label_name] = compute_IOU(mask_i, label_i)
+            pix_acc_metric[label_name] = compute_pix_acc(mask_i, label_i)
+
+    return iou_metric, pix_acc_metric
 
 
-global_step = [ 0 ]
-def train_one_epoch(epoch_index):
-    losses = []
-    for data in (pbar := tqdm(dataloader)):
-        embeds, labels = data
+def collate_fn(data):
+    names, embeds, labels = zip(*data)
+    return names, torch.stack(embeds, axis=0), labels
+
+
+def main():
+    model = Decoder()
+    model.load_state_dict(torch.load('v5/model_30.pth'))
+    model.to(device)
+    model.eval()
+
+    dataset = PeoplePosesDataset(mode="val")
+    # batch size 64 uses about 5GB of GPU RAM
+    dataloader = DataLoader(dataset, batch_size=64, shuffle=False, collate_fn=collate_fn)
+
+    miou_table = []
+    pix_acc_table = []
+    # evaluation takes about 7 minutes on 4060 GPU
+    for names, embeds, labels in tqdm(dataloader):
         embeds = embeds.to(device)
-        labels = labels.to(device)
-        optimizer.zero_grad()
-        logits = model(embeds)
-        loss = loss_fn(logits, labels)
-        loss_t = loss.detach().cpu().numpy()
-        losses.append(loss_t)
-        writer.add_scalar('loss', loss_t, global_step[0])
-        global_step[0] += 1
-        loss.backward()
-        optimizer.step()
-        pbar.set_description(f'loss: {loss_t}')
-    print('Average Loss: {}'.format(np.mean(losses)))
-    scheduler.step()
+        with torch.no_grad():
+            # B, 20, 256, 256
+            masks = model(embeds)
+            masks = masks.cpu()
+        
+        for i in range(len(labels)):
+            miou, pix_acc = compute_metric(names[i], masks[i], labels[i])
+            miou_table.append(miou)
+            pix_acc_table.append(pix_acc)
+    
+    miou_table = pd.DataFrame(miou_table, columns=miou_table[0].keys()).set_index('name')
+    pix_acc_table = pd.DataFrame(pix_acc_table, columns=pix_acc_table[0].keys()).set_index('name')
+
+    miou_table.to_csv('v5_miou.csv')
+    pix_acc_table.to_csv('v5_pix_acc.csv')
+
+    print('miou:', miou_table.mean(axis=None))
+    print('miou per class:\n', miou_table.mean())
+    print()
+    print('pix_acc:', pix_acc_table.mean(axis=None))
+    print('pix_acc per class:\n', pix_acc_table.mean())
+    
 
 
-dataset = PeoplePosesDataset()
-dataloader = DataLoader(dataset, batch_size=24, shuffle=True)
 
-model = Decoder()
-model = model.to(device)
-
-os.makedirs(MODEL, exist_ok=True)
-optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
-scheduler = ExponentialLR(optimizer, gamma=0.9)
-writer = SummaryWriter(log_dir=MODEL)
-
-for epoch in range(40):
-    print('EPOCH {}: LR={}'.format(epoch, optimizer.param_groups[0]['lr']))
-
-    model.train(True)
-    train_one_epoch(epoch)
-
-    model_path = f'{MODEL}/model_{epoch}.pth'
-    torch.save(model.state_dict(), model_path)
+if __name__ == '__main__':
+    main()
