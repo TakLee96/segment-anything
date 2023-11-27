@@ -11,14 +11,17 @@ from torch.jit import Error
 
 # numpy metrics
 import os
+import traceback
 from tqdm import tqdm
+
+import sys
+sys.path.append("../..")
 
 import cv2
 from segment_anything import build_sam, SamAutomaticMaskGenerator
 from PIL import Image, ImageDraw
 import clip
 
-import sys
 from segment_anything import sam_model_registry, SamAutomaticMaskGenerator, SamPredictor
 
 # Convert Mask's Boundary Box from XYWH to XYXY format
@@ -112,9 +115,11 @@ def evaluate(sam_generator, data_cnt=100):
     evaluate_data = data_list
   else:
     evaluate_data = data_list[:data_cnt]
+
+  data_name = None
+  miou_table = []
+  pix_acc_table = []
   try:
-    miou_table = []
-    pix_acc_table = []
     for data_name in (pbar := tqdm(evaluate_data)):
       img_path = root +'val_images/' + data_name + '.jpg'
       seg_path = root + 'val_segmentations/' + data_name + '.png'
@@ -130,12 +135,19 @@ def evaluate(sam_generator, data_cnt=100):
           continue
 
       # Generate masks for all object by SAM
+      sam_generator.predictor.reset_image()
       masks = sam_generator.generate(image)
 
       # Cut out all masks
       input_img = Image.open(img_path)
       cropped_boxes = []
 
+      if len(masks) > 48:
+        print(f'{data_name} has {len(masks)} masks, shrunk to 48')
+        masks = masks[:48]
+      if len(masks) == 0:
+        print(f'{data_name} has no masks, skipped for now')
+        continue
       for mask in masks:
         crop_box = convert_box_xywh_to_xyxy(mask['bbox'])
         if(crop_box[0]==crop_box[2] or crop_box[1]==crop_box[3]):
@@ -144,7 +156,8 @@ def evaluate(sam_generator, data_cnt=100):
 
       preprocessed_images = [preprocess(img).to(device) for img in cropped_boxes]
       stacked_images = torch.stack(preprocessed_images)
-      image_features = model.encode_image(stacked_images)
+      with torch.no_grad():
+        image_features = model.encode_image(stacked_images)
 
       # Get Mask By Label Id
       anns = gt_to_anns_of_label_mask(mask_gt)
@@ -159,12 +172,11 @@ def evaluate(sam_generator, data_cnt=100):
       miou, pix_acc = compute_metric(data_name, predict_masks, mask_gt[:,:,0])
       miou_table.append(miou)
       pix_acc_table.append(pix_acc)
-    return miou_table, pix_acc_table
-
   except Exception as e:
-    print(e)
-    print(miou_table)
-    print(pix_acc_table)
+    print(data_name)
+    traceback.print_exc()
+
+  return miou_table, pix_acc_table
 
 def export_csv(miou_table, pix_acc_table, miou_csv_name="random_miou.csv", pix_acc_csv_name="random_pix_acc.csv", export = True):
   miou_table_ = pd.DataFrame(miou_table, columns=miou_table[0].keys()).set_index('name')
@@ -173,17 +185,12 @@ def export_csv(miou_table, pix_acc_table, miou_csv_name="random_miou.csv", pix_a
     miou_table_.to_csv('clip_sam_result/'+miou_csv_name)
     pix_acc_table_.to_csv('clip_sam_result/'+pix_acc_csv_name)
 
-
   # print('miou:\n', miou_table_.mean(axis=None))
   # print('miou per class:\n', miou_table_.mean())
-  print()
+  # print()
   # print('pix_acc:\n', pix_acc_table_.mean(axis=None))
   # print('pix_acc per class:\n', pix_acc_table_.mean())
   return miou_table_.mean(), pix_acc_table_.mean()
-
-
-
-
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model, preprocess = clip.load("ViT-B/32", device=device)
@@ -201,7 +208,7 @@ LABELS = ["Background","Hat","Hair","Glove",
 # 12 GB GPU might out of memory
 mask_generator_default = SamAutomaticMaskGenerator(
     sam,
-    points_per_side = 32,
+    points_per_side = 16,
     points_per_batch = 64,
     pred_iou_thresh = 0.88,
     stability_score_thresh = 0.98, # 0.95 
@@ -216,5 +223,7 @@ mask_generator_default = SamAutomaticMaskGenerator(
     output_mode = "binary_mask"
   )
 miou_table, pix_acc_table = evaluate(mask_generator_default,10000)
-miou_mean_default_100, pixacc_mean_default_100 = export_csv(miou_table, pix_acc_table, miou_csv_name="random_miou_default_100.csv", pix_acc_csv_name="random_pix_acc_default_100.csv")
-print('miou per class\n', miou_mean_default_100,10)
+export_csv(
+  miou_table, pix_acc_table,
+  miou_csv_name="clip_sam_16_miou.csv",
+  pix_acc_csv_name="clip_sam_16_pix_acc.csv")
