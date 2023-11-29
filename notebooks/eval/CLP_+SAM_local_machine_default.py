@@ -208,10 +208,10 @@ LABELS = ["Background","Hat","Hair","Glove",
 # 12 GB GPU might out of memory
 mask_generator_default = SamAutomaticMaskGenerator(
     sam,
-    points_per_side = 16,
+    points_per_side = 32,
     points_per_batch = 64,
     pred_iou_thresh = 0.88,
-    stability_score_thresh = 0.98, # 0.95 
+    stability_score_thresh = 0.95,
     stability_score_offset = 1.0,
     box_nms_thresh = 0.7,
     crop_n_layers = 0,
@@ -219,11 +219,11 @@ mask_generator_default = SamAutomaticMaskGenerator(
     crop_overlap_ratio = 512 / 1500,
     crop_n_points_downscale_factor = 1,
     point_grids = None,
-    min_mask_region_area = 10, # 0 
+    min_mask_region_area = 0, 
     output_mode = "binary_mask"
   )
 miou_table, pix_acc_table = evaluate(mask_generator_default,10000)
 export_csv(
   miou_table, pix_acc_table,
-  miou_csv_name="clip_sam_16_miou.csv",
-  pix_acc_csv_name="clip_sam_16_pix_acc.csv")
+  miou_csv_name="clip_sam_32_miou.csv",
+  pix_acc_csv_name="clip_sam_32_pix_acc.csv")
