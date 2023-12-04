@@ -52,7 +52,7 @@ def getPredictions(promptValue, image):
   #image = cv2.imread(SOURCE_IMAGE_PATH)
 
   pil_image = image.convert('RGB')
-  open_cv_image = np.array(image)
+  open_cv_image = np.array(pil_image)
   # Convert RGB to BGR
   open_cv_image = open_cv_image[:, :, ::-1].copy()
 
