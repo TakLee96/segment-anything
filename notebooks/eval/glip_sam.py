@@ -51,7 +51,7 @@ def getPredictions(promptValue, imagePath):
   bbox = []
   if len(predictions) > 0:
     bboxVal = predictions[0]['bboxes']
-    print(predictions[0]['scores'])
+    # print(predictions[0]['scores'])
     xMin = 0.0
     yMin = 0.0
     xMax = 0.0
@@ -187,6 +187,10 @@ def gt_to_anns_of_label_mask(mask_gt):
         'label': label,
       })
   return anns
+
+from contextlib import redirect_stdout
+import os
+
 def getFinalPredictions(images,imagePaths, promptVals):
   masks = []
   emptyPrompt = ""
@@ -197,8 +201,10 @@ def getFinalPredictions(images,imagePaths, promptVals):
     predictor.set_image(image2)
 
     for prompt in promptVals:
+      # disable annoy output
+      with redirect_stdout(open(os.devnull, "w")):
+            bbox = getPredictions(prompt, image_path)
       
-      bbox = getPredictions(prompt, image_path)
       if(bbox[0] == 0 and bbox[1] == 0 and bbox[2] == 0 and bbox[3] == 0 and emptyPrompt == ""):
         mask = getSAMPreditction(img, bbox)
         imageMasks[prompt] = mask
@@ -377,15 +383,12 @@ def getImages2(start_idx,end_idx):
         print(e)
     return images, truthMasks, data_list2,imagePaths
 
-
-
-
 def main():
 
     miou_table = []
     pix_acc_table = []
-    num_slice = 1
-    num_data_size = 10
+    num_slice = 1000
+    num_data_size = 10000
     batch_size = int( num_data_size / num_slice)
     for i in range(num_slice):
         start = i * batch_size
