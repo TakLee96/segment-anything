@@ -387,7 +387,7 @@ def main():
 
     miou_table = []
     pix_acc_table = []
-    num_slice = 1000
+    num_slice = 10
     num_data_size = 10000
     batch_size = int( num_data_size / num_slice)
     for i in range(num_slice):
