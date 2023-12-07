@@ -8,7 +8,7 @@ TODO add comments and finish this readme
 2. Add Sam model to this repo root folder
 
 ## file structure
-To evalua all the method, at least you download evaluation data set and sam model
+To evalua all the method, make sure evaluation data and sam model in this structure:
 ```md
 segment-anything
 ├── sam_vit_h_4b8939.pth
