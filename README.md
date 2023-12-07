@@ -1,3 +1,44 @@
+# CSCI567
+TODO add comments and finish this readme\\
+# preparation
+ python>=3.8, as well as pytorch>=1.7 and torchvision>=0.8. 
+
+1. Add people_poses data set into datasets [dataset readme](datasets/people_poses/README.md) TODO:add datase google drive link
+
+2. Add Sam model to this repo root folder
+
+# file structure
+```md
+segment-anything
+├── sam_vit_h_4b8939.pth
+├── datasets/people_poses
+│   ├── val_embeds
+│   │   └── xxx.npz
+│   ├── val_images
+│   │   └── xxx.jpg
+│   ├── val_segementations
+│   │   └── xxx.png
+│   ├── val_id.txt
+│   └── playground.ipynb
+└── notebooks
+    ├── eval
+    │   ├── xxx_result
+    │   │   ├── miou.csv
+    │   │   └── pixacc.csv
+    │   ├── xxx.py
+    │   ├── xxx_colab.ipynb
+    │   └── xxx_local_machine.ipynb
+    ├── train
+    │   ├── xxx.py
+    │   └── xxx.ipynb
+    └── vis
+        ├── xxx.py
+        ├── xxx.ipynb
+        ├── xxx.png
+        └── xxx.npy
+```
+
+
 # Segment Anything
 
 **[Meta AI Research, FAIR](https://ai.facebook.com/research/)**
