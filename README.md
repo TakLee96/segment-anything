@@ -1,5 +1,5 @@
 # CSCI567
-TODO add comments and finish this readme\\
+TODO add comments and finish this readme
 ## preparation
  python>=3.8, as well as pytorch>=1.7 and torchvision>=0.8. 
 
@@ -8,16 +8,23 @@ TODO add comments and finish this readme\\
 2. Add Sam model to this repo root folder
 
 ## file structure
+To evalua all the method, at least you download evaluation data set and sam model
+```md
+segment-anything
+├── sam_vit_h_4b8939.pth
+└── datasets/people_poses
+    ├── val_images/*.jpg
+    ├── val_segementations/*.png
+    └── val_id.txt
+```
+
 ```md
 segment-anything
 ├── sam_vit_h_4b8939.pth
 ├── datasets/people_poses
-│   ├── val_embeds
-│   │   └── xxx.npz
-│   ├── val_images
-│   │   └── xxx.jpg
-│   ├── val_segementations
-│   │   └── xxx.png
+│   ├── val_embeds/*.npz
+│   ├── val_images/*.jpg
+│   ├── val_segementations/*.png
 │   ├── val_id.txt
 │   └── playground.ipynb
 └── notebooks
@@ -25,17 +32,17 @@ segment-anything
     │   ├── xxx_result
     │   │   ├── miou.csv
     │   │   └── pixacc.csv
-    │   ├── xxx.py
-    │   ├── xxx_colab.ipynb
-    │   └── xxx_local_machine.ipynb
+    │   ├── *.py
+    │   ├── *_colab.ipynb
+    │   └── *_local_machine.ipynb
     ├── train
-    │   ├── xxx.py
-    │   └── xxx.ipynb
+    │   ├── *.py
+    │   └── *.ipynb
     └── vis
-        ├── xxx.py
-        ├── xxx.ipynb
-        ├── xxx.png
-        └── xxx.npy
+        ├── *.py
+        ├── *.ipynb
+        ├── *.png
+        └── *.npy
 ```
 
 
