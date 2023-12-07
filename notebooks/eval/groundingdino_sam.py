@@ -10,7 +10,7 @@ from tqdm import tqdm
 repo_root = "../../"
 sam_path = repo_root + "sam_vit_h_4b8939.pth"
 Dataset_path = repo_root + "datasets/people_poses/"
-HOME = "/home/hongxin/"
+HOME = "~"
 GROUNDING_DINO_CONFIG_PATH = os.path.join(HOME, "GroundingDINO/groundingdino/config/GroundingDINO_SwinT_OGC.py")
 print(GROUNDING_DINO_CONFIG_PATH, "; exist:", os.path.isfile(GROUNDING_DINO_CONFIG_PATH))
 GROUNDING_DINO_CHECKPOINT_PATH = os.path.join(HOME, "weights", "groundingdino_swint_ogc.pth")

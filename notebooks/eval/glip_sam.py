@@ -12,7 +12,7 @@ sam_path = repo_root + "sam_vit_h_4b8939.pth"
 Dataset_path = repo_root + "datasets/people_poses/"
 import os
 
-HOME = "/home/hongxin/"
+HOME = "~"
 model_name =  'glip_atss_swin-t_fpn_dyhead_pretrain_obj365-goldg-cc3m-sub'
 GLIP_CHECKPOINT_PATH = os.path.join(HOME, "weights", "glip_tiny_mmdet-c24ce662.pth")
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
