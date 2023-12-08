@@ -1,5 +1,5 @@
 # CSCI567
-TODO add comments and finish readme file
+TODO add some comments, finish readme file and github reference
 
 ## file structure
 To evalua all the method, make sure evaluation data and sam model in this structure:
@@ -72,7 +72,6 @@ python <model_name>.py
 ```
 3. reulst will show up in notebooks/eval/*result folder
 
----
 ---
 
 
