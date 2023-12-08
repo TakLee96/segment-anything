@@ -57,7 +57,7 @@ segment-anything
 ## preparation
  python>=3.8, as well as pytorch>=1.7 and torchvision>=0.8. 
 
-1. Add people_poses data set into datasets [dataset readme](datasets/people_poses/README.md) TODO:add datase google drive link
+1. Add people_poses data set into datasets [dataset readme](datasets/people_poses/README.md) and [link](https://drive.google.com/drive/folders/1yB5x4H0m3LszjpErRDDXITDxzlFgQEm7?usp=sharing) 
 
 2. Add Sam model to this repo root folder
 ## train linear probe model
