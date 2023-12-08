@@ -14,8 +14,9 @@ segment-anything
     ├── val_id.txt
     └── val_id_short.txt
 ```
-val_id_short.txt include the 20 first image from val set for visualization and comparation of all method
-SAM model download by 
+- [dataset readme](datasets/people_poses/README.md)
+- val_id_short.txt include the 20 first image from val set for visualization and comparation of all method
+- SAM model download by 
 ```bash
 wget https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth
 ```
