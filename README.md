@@ -72,6 +72,13 @@ python <model_name>.py
 ```
 3. reulst will show up in notebooks/eval/*result folder
 
+
+## reference
+- [CLIP-SAM](https://github.com/maxi-w/CLIP-SAM)
+- [grounded-segment-anything](https://github.com/IDEA-Research/Grounded-Segment-Anything)
+- [mmdetection](https://github.com/open-mmlab/mmdetection)
+- [CLIPSeg-sam](https://huggingface.co/blog/clipseg-zero-shot)
+- [interactive-segmentation](https://github.com/SamsungLabs/ritm_interactive_segmentation)
 ---
 
 
