@@ -70,6 +70,7 @@ segment-anything
 cd notebooks/eval
 python <model_name>.py
 ```
+3. reulst will show up in notebooks/eval/*result folder
 
 ---
 ---
