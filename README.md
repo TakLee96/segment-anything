@@ -1,5 +1,4 @@
 # CSCI567
-TODO add some comments, finish readme file and github reference
 
 ## file structure
 To evalua all the method, make sure evaluation data and sam model in this structure:
