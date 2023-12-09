@@ -62,7 +62,7 @@ segment-anything
 2. Add Sam model to this repo root folder
 ## train linear probe model
 1. generate image embeding by [gen_embedding.ipynb](notebooks/train/gen_embedding.ipynb)
-2. use ipynb or py file in the train folder to trian the liear probe model
+2. use ipynb or py file in the train folder to train the linear probe model
 ## evaluation
 1. use *_local_machine.ipynb to setup different model enviroment, and try on small data amount of data and get some visualization result
 2. use *.py file to generate the csv result for each model (the interactive method based on image embedding data)
