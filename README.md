@@ -79,6 +79,7 @@ python <model_name>.py
 - [mmdetection](https://github.com/open-mmlab/mmdetection)
 - [CLIPSeg-sam](https://huggingface.co/blog/clipseg-zero-shot)
 - [interactive-segmentation](https://github.com/SamsungLabs/ritm_interactive_segmentation)
+- [segment anything]([https://github.com/SamsungLabs/ritm_interactive_segmentation](https://github.com/facebookresearch/segment-anything)https://github.com/facebookresearch/segment-anything)
 ---
 
 
