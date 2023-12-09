@@ -74,11 +74,12 @@ python <model_name>.py
 
 ## model names
 The list of possible models include that can be model_name are :
-1. CLIP_+_SAM (CLIP + SAM model)
-2. clipseg_sam (CLIPSeg + SAM model)
-3. glip_sam (GLIP + SAM model)
-4. groundingdino_sam (Grounding DINO + SAM model)
-
+1. `CLIP_+_SAM` (CLIP + SAM model)
+2. `clipseg_sam` (CLIPSeg + SAM model)
+3. `glip_sam` (GLIP + SAM model)
+4. `groundingdino_sam` (Grounding DINO + SAM model)
+5. `interactive_embedding` (1-Point Interactive Segmentation models (random & center))
+   
 ## reference
 - [CLIP-SAM](https://github.com/maxi-w/CLIP-SAM)
 - [grounded-segment-anything](https://github.com/IDEA-Research/Grounded-Segment-Anything)
