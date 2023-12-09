@@ -72,6 +72,12 @@ python <model_name>.py
 ```
 3. reulst will show up in notebooks/eval/*result folder
 
+## model names
+The list of possible models include that can be model_name are :
+1. CLIP_+_SAM (CLIP + SAM model)
+2. clipseg_sam (CLIPSeg + SAM model)
+3. glip_sam (GLIP + SAM model)
+4. groundingdino_sam (Grounding DINO + SAM model)
 
 ## reference
 - [CLIP-SAM](https://github.com/maxi-w/CLIP-SAM)
